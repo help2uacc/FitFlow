@@ -1,0 +1,26 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Vazirmatn", ui-sans-serif, system-ui, sans-serif;
+  --color-brand-50: #ecfdf3;
+  --color-brand-100: #d1fae1;
+  --color-brand-200: #a7f0c6;
+  --color-brand-300: #6ee0a4;
+  --color-brand-400: #34c77f;
+  --color-brand-500: #16a864;
+  --color-brand-600: #0b8a51;
+  --color-brand-700: #0a6e43;
+  --color-brand-800: #0c5737;
+  --color-brand-900: #0b472e;
+}
+
+:root { color-scheme: light; }
+.dark { color-scheme: dark; }
+html, body { min-height: 100%; }
+body { @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased; font-feature-settings: "ss01"; }
+.num { font-variant-numeric: tabular-nums; }
+.ltr { direction: ltr; unicode-bidi: isolate; }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+input[type="range"] { accent-color: var(--color-brand-600); }
+:focus-visible { outline: 2px solid var(--color-brand-500); outline-offset: 2px; }
