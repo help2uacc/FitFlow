@@ -8,7 +8,7 @@ export function PlanReplaceButton({ exerciseId, exerciseName, sessionKey, index 
   const router = useRouter();
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="text-xs font-medium text-brand-700 underline dark:text-brand-300">جایگزینی</button>
+      <button type="button" onClick={() => setOpen(true)} className="text-xs font-medium text-brand-700 underline dark:text-brand-300">جایگزینی حرکت</button>
       {open && (
         <ReplaceSheet exerciseId={exerciseId} exerciseName={exerciseName} sessionKey={sessionKey} index={index} allowToday={false}
           onClose={() => setOpen(false)} onPlanReplaced={() => router.refresh()} />

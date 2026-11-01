@@ -71,7 +71,7 @@ export function QuestionInput({ q, value, onChange, autoFocus }: { q: Question; 
           <div className="text-center"><span className="num text-4xl font-extrabold">{fa(v)}</span> <span className="text-slate-500">{q.unit}</span></div>
           <input type="range" min={q.min} max={q.max} step={q.step ?? 1} value={v} onChange={(e) => onChange(Number(e.target.value))} className="w-full" aria-label={q.title} dir="ltr" />
           <div className="flex justify-between text-xs text-slate-500" dir="ltr"><span>{fa(q.min ?? 0)}</span><span>{fa(q.max ?? 0)}</span></div>
-          {typeof value !== "number" && <p className="text-center text-xs text-slate-500">برای تأیید مقدار پیشنهادی «ادامه» را بزنید یا اسلایدر را جابه‌جا کنید.</p>}
+          {typeof value !== "number" && <p className="text-center text-xs text-slate-500">برای تأیید مقدار نمایش‌داده‌شده «ادامه» را بزنید یا اسلایدر را جابه‌جا کنید.</p>}
         </div>
       );
     }

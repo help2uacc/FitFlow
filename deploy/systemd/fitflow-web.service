@@ -1,0 +1,33 @@
+[Unit]
+Description=FitFlow web (Next.js)
+After=network.target
+Wants=fitflow-worker.service
+
+[Service]
+Type=simple
+User=fitflow
+Group=fitflow
+WorkingDirectory=/opt/fitflow/app
+EnvironmentFile=/etc/fitflow/fitflow.env
+ExecStartPre=/usr/bin/node dist/migrate.mjs
+ExecStart=/opt/fitflow/app/node_modules/.bin/next start -p ${PORT} -H 127.0.0.1
+Restart=always
+RestartSec=3
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/fitflow /var/backups/fitflow
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryMax=1G
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=fitflow-web
+
+[Install]
+WantedBy=multi-user.target

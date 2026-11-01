@@ -37,7 +37,7 @@ export function Wizard({ initialAnswers, currentQuestionId, name }: { initialAns
 
   const save = async (value: unknown) => {
     if (!q) return;
-    const effective = value === undefined && q.type === "slider" && q.recommended ? Number(q.recommended) : value;
+    const effective = (value === undefined || value === null) && q.type === "slider" ? Number(q.recommended ?? q.min ?? 0) : value;
     const local = validateAnswer(q, effective);
     if (!local.ok) { setError(local.error); return; }
     setSaving(true);
@@ -126,7 +126,7 @@ export function Wizard({ initialAnswers, currentQuestionId, name }: { initialAns
   }
 
   return (
-    <div className="flex min-h-[85dvh] flex-col">
+    <div className="flex min-h-[85dvh] flex-col" data-qid={q!.id}>
       <div className="mb-6 space-y-2">
         <div className="flex items-center justify-between text-sm">
           <Badge tone="brand">{CATEGORIES[q!.category]}</Badge>

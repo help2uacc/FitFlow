@@ -1,0 +1,11 @@
+# Only needed if you redirect service output to files; by default logs go to journald
+# (size-limit via /etc/systemd/journald.conf, e.g. SystemMaxUse=500M).
+/var/log/fitflow/*.log {
+    weekly
+    rotate 8
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+}

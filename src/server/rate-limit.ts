@@ -16,3 +16,18 @@ export function rateLimit(key: string, limit: number, windowMs: number) {
 export function resetRateLimits() {
   buckets.clear();
 }
+
+/** Failure-only limiter: `blocked` checks without counting, `fail` records a failed attempt. */
+export const failureLimiter = {
+  blocked(key: string, limit: number) {
+    const b = buckets.get(key);
+    if (!b || b.reset < Date.now()) return false;
+    return b.count >= limit;
+  },
+  fail(key: string, windowMs: number) {
+    rateLimit(key, Number.MAX_SAFE_INTEGER, windowMs);
+  },
+  clear(key: string) {
+    buckets.delete(key);
+  },
+};

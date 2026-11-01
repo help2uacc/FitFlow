@@ -64,7 +64,21 @@ export function fitItemsToTargets(
   a = clamp(a, 0.5, 2.5);
   if (R.kcal > 0) b = clamp((target.kcal - a * A.kcal) / R.kcal, 0.3, 2.5);
   else a = clamp(target.kcal / Math.max(1, A.kcal), 0.5, 2.5);
-  return items.map((i) => ({ food: i.food, grams: roundGrams(i.grams * (isProteinAnchor(i.food) ? a : b)) }));
+  let out = items.map((i) => ({ food: i.food, grams: i.grams * (isProteinAnchor(i.food) ? a : b) }));
+  // Second pass: bounded proportional correction so sparse days (e.g. 2 meals) can still reach the target.
+  const maxGrams = (f: FoodRow) => (f.kcal100 >= 400 ? 60 : f.kcal100 >= 200 ? 400 : 600);
+  for (let iter = 0; iter < 6; iter++) {
+    const total = out.reduce((s, i) => s + (i.food.kcal100 * i.grams) / 100, 0);
+    if (total <= 0 || Math.abs(total - target.kcal) / target.kcal < 0.02) break;
+    const ratio = clamp(target.kcal / total, 0.5, 2);
+    // prefer adjusting non-anchor (carb/fat) items first to protect the protein target
+    const pool = out.filter((i) => !isProteinAnchor(i.food) && (ratio < 1 || i.grams < maxGrams(i.food)));
+    const scaled = pool.length ? pool : out;
+    const poolKcal = scaled.reduce((s, i) => s + (i.food.kcal100 * i.grams) / 100, 0);
+    const k = poolKcal > 0 ? clamp(1 + (target.kcal - total) / poolKcal, 0.5, 2.5) : ratio;
+    out = out.map((i) => (scaled.includes(i) ? { food: i.food, grams: Math.min(maxGrams(i.food), Math.max(5, i.grams * k)) } : i));
+  }
+  return out.map((i) => ({ food: i.food, grams: roundGrams(i.grams) }));
 }
 
 export function computeMeal(m: { slot: string; title: string; time: string; prepMinutes: number; instructions: string; items: { food: FoodRow; grams: number }[] }): MealComputed {

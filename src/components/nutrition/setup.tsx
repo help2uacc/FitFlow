@@ -94,7 +94,7 @@ function MiniWizard({ ids, step, setStep, onDone }: { ids: string[]; step: numbe
   const opts = q.options ?? [];
   return (
     <Card>
-      <div className="mb-3 space-y-1">
+      <div className="mb-3 space-y-1" data-qid={q.id}>
         <div className="flex justify-between text-xs text-slate-500"><span>{CATEGORIES[q.category]}</span><span className="num">{faNum(step + 1)} از {faNum(ids.length)}</span></div>
         <ProgressBar value={step} max={ids.length} label="پیشرفت" />
       </div>

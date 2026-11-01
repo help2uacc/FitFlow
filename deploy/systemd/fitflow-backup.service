@@ -1,0 +1,12 @@
+[Unit]
+Description=FitFlow database backup
+
+[Service]
+Type=oneshot
+User=fitflow
+Group=fitflow
+WorkingDirectory=/opt/fitflow/app
+EnvironmentFile=/etc/fitflow/fitflow.env
+ExecStart=/usr/bin/node dist/backup.mjs
+Nice=10
+IOSchedulingClass=idle
