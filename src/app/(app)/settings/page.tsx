@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/ui";
-import { DangerZone, InstallPanel, LogoutButton, NotificationsPanel, PasswordPanel, SessionsPanel, ThemePanel } from "@/components/settings/settings-panels";
+import { DangerZone, InstallPanel, InvitePanel, LogoutButton, NotificationsPanel, PasswordPanel, SessionsPanel, ThemePanel } from "@/components/settings/settings-panels";
 import { requireUser } from "@/server/auth";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +19,7 @@ export default async function Page() {
           <div className="font-bold">وضعیت سیستم هوش مصنوعی</div>
           <div className="text-sm text-slate-500">بررسی نصب و احراز هویت Codex روی سرور ←</div>
         </Link>
+        {user.role === "owner" && <InvitePanel />}
         <PasswordPanel />
         <SessionsPanel />
         <DangerZone />

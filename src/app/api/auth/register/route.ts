@@ -13,6 +13,7 @@ const Body = z.object({
   displayName: z.string().trim().min(1, "نام لازم است.").max(80),
   password: z.string().min(1).max(200),
   passwordConfirm: z.string().max(200),
+  invite: z.string().max(200).optional(),
 }).refine((b) => b.password === b.passwordConfirm, { message: "تکرار رمز عبور مطابقت ندارد.", path: ["passwordConfirm"] });
 
 export async function POST(req: NextRequest) {

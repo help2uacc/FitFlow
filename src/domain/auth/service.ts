@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { and, count, eq, gt, lt, ne } from "drizzle-orm";
+import { and, count, eq, gt, isNull, lt, ne } from "drizzle-orm";
 import type { DB } from "@/db/client";
 import * as t from "@/db/schema";
 import { AppError } from "@/lib/errors";
@@ -23,15 +23,40 @@ export function registrationOpen(db: DB, allowEnv: boolean) {
   return s?.value === true;
 }
 
-export async function registerUser(db: DB, input: { email: string; displayName: string; password: string }, allowEnv: boolean) {
-  if (!registrationOpen(db, allowEnv)) throw new AppError("registration_closed", "ثبت‌نام عمومی غیرفعال است.", 403);
+export const INVITE_TTL = 7 * DAY;
+
+export function createInvite(db: DB, userId: string) {
+  const token = randomBytes(24).toString("base64url");
+  const expiresAt = Date.now() + INVITE_TTL;
+  db.insert(t.invites).values({ id: tokenHash(token), createdBy: userId, expiresAt }).run();
+  return { token, expiresAt };
+}
+
+export function inviteValid(db: DB, token: string | undefined | null) {
+  if (!token || token.length > 200) return false;
+  return !!db.select({ id: t.invites.id }).from(t.invites)
+    .where(and(eq(t.invites.id, tokenHash(token)), isNull(t.invites.usedAt), gt(t.invites.expiresAt, Date.now()))).get();
+}
+
+export async function registerUser(db: DB, input: { email: string; displayName: string; password: string; invite?: string | null }, allowEnv: boolean) {
+  const open = registrationOpen(db, allowEnv);
+  if (!open && !inviteValid(db, input.invite)) throw new AppError(input.invite ? "invite_invalid" : "registration_closed", input.invite ? "لینک دعوت نامعتبر، منقضی یا قبلاً استفاده شده است." : "ثبت‌نام عمومی غیرفعال است.", 403);
   const email = input.email.trim().toLowerCase();
   const problem = passwordProblems(input.password);
   if (problem) throw new AppError("weak_password", problem);
   if (db.select().from(t.users).where(eq(t.users.email, email)).get()) throw new AppError("email_taken", "این ایمیل قبلاً ثبت شده است.", 409);
+  const passwordHash = await hashPassword(input.password);
   const role = userCount(db) === 0 ? "owner" : "user";
   const id = newId();
-  db.insert(t.users).values({ id, email, displayName: input.displayName.trim(), passwordHash: await hashPassword(input.password), role }).run();
+  // sync transaction: the user is created only if the invite is consumed right now (no double use)
+  db.transaction((tx) => {
+    tx.insert(t.users).values({ id, email, displayName: input.displayName.trim(), passwordHash, role }).run();
+    if (open) return;
+    const now = Date.now();
+    const r = tx.update(t.invites).set({ usedAt: now, usedBy: id })
+      .where(and(eq(t.invites.id, tokenHash(input.invite!)), isNull(t.invites.usedAt), gt(t.invites.expiresAt, now))).run();
+    if (r.changes !== 1) throw new AppError("invite_invalid", "لینک دعوت نامعتبر، منقضی یا قبلاً استفاده شده است.", 403);
+  });
   return { id, email, role };
 }
 

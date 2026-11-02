@@ -39,6 +39,16 @@ export const sessions = sqliteTable("sessions", {
   ip: text("ip"),
 }, (t) => [index("sessions_user_idx").on(t.userId)]);
 
+/** Single-use registration invites. `id` is sha256(token); the raw token only lives in the link. */
+export const invites = sqliteTable("invites", {
+  id: id(),
+  createdBy: userId(),
+  createdAt: createdAt(),
+  expiresAt: integer("expires_at").notNull(),
+  usedBy: text("used_by").references(() => users.id, { onDelete: "set null" }),
+  usedAt: integer("used_at"),
+});
+
 export const appSettings = sqliteTable("app_settings", {
   key: text("key").primaryKey(),
   value: text("value", { mode: "json" }).notNull(),

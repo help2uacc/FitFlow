@@ -166,6 +166,36 @@ export function SessionsPanel() {
   );
 }
 
+export function InvitePanel() {
+  const [link, setLink] = useState<{ url: string; expiresAt: number } | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const create = async () => {
+    setBusy(true); setErr(null); setCopied(false);
+    try { setLink(await api<{ url: string; expiresAt: number }>("/api/auth/invites", { method: "POST" })); } catch (e) { setErr((e as Error).message); }
+    setBusy(false);
+  };
+  const copy = async () => { try { await navigator.clipboard.writeText(link!.url); setCopied(true); } catch { /* user can copy manually */ } };
+  return (
+    <Card>
+      <CardHeader title="دعوت کاربر" />
+      <p className="mb-3 text-sm text-slate-500">یک لینک یک‌بارمصرف بسازید و برای فرد مورد نظر بفرستید تا بتواند ثبت‌نام کند. هر لینک ۷ روز اعتبار دارد.</p>
+      {err && <Alert tone="error">{err}</Alert>}
+      {link && (
+        <div className="mb-3 space-y-2">
+          <Input readOnly dir="ltr" aria-label="لینک دعوت" value={link.url} onFocus={(e) => e.currentTarget.select()} />
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs text-slate-500">انقضا: {faDateTime(link.expiresAt)}</span>
+            <Button size="sm" variant="secondary" onClick={copy}>{copied ? "کپی شد" : "کپی لینک"}</Button>
+          </div>
+        </div>
+      )}
+      <Button block variant="secondary" onClick={create} loading={busy}>ساخت لینک دعوت</Button>
+    </Card>
+  );
+}
+
 export function LogoutButton() {
   const [busy, setBusy] = useState(false);
   const logout = async () => {

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { api, ApiError } from "@/lib/client";
 import { Alert, Button, Card, Field, Input } from "@/components/ui";
 
-export function RegisterForm({ firstUser }: { firstUser: boolean }) {
+export function RegisterForm({ firstUser, invite }: { firstUser: boolean; invite?: string }) {
   const [f, setF] = useState({ displayName: "", email: "", password: "", passwordConfirm: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -14,7 +14,7 @@ export function RegisterForm({ firstUser }: { firstUser: boolean }) {
     setLoading(true);
     setError(null);
     try {
-      await api("/api/auth/register", { body: f });
+      await api("/api/auth/register", { body: { ...f, invite } });
       window.location.href = "/onboarding";
     } catch (err) {
       setError(err instanceof ApiError ? (err.details as { message: string }[] | undefined)?.[0]?.message ?? err.message : "خطا در ثبت‌نام");
